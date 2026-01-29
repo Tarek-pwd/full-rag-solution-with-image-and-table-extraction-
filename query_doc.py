@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 # =========================
 FAISS_INDEX_PATH = "document_faiss.index"
 CHUNKS_PKL_PATH = "document_chunks.pkl"
-TOP_K = 10
+TOP_K = 15
 
 # =========================
 # LOAD MODEL
