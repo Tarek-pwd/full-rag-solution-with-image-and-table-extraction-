@@ -1,0 +1,10 @@
+*.pdf
+runs
+MBS_images
+document_chunks.pkl
+document_faiss.index
+similarity_trial.py
+table_breaker.py
+generated
+output
+.env

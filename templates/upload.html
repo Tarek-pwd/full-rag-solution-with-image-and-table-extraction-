@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOI Document Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="ambient-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+    
+    <div class="noise-overlay"></div>
+    
+    <header class="top-bar">
+        <div class="logo-section">
+            <img src="/static/moi_logo.jpeg" alt="MOI" class="logo">
+            <div class="logo-text">
+                <span class="logo-title">Ministry of Interior</span>
+                <span class="logo-subtitle">Document Intelligence Platform</span>
+            </div>
+        </div>
+        <div class="header-badge">
+            <span class="badge-dot"></span>
+            <span>Secure Environment</span>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="upload-container">
+            <div class="upload-header">
+                <div class="step-indicator">
+                    <div class="step active">
+                        <span class="step-number">01</span>
+                        <span class="step-label">Upload</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <span class="step-number">02</span>
+                        <span class="step-label">Process</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <span class="step-number">03</span>
+                        <span class="step-label">Analyze</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-card">
+                <div class="card-inner">
+                    <div class="upload-zone" id="dropZone">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <h2 class="upload-title">Upload Intelligence Document</h2>
+                        <p class="upload-description">Drag and drop your PDF file here, or click to browse</p>
+                        <div class="file-types">
+                            <span class="file-badge">PDF</span>
+                            <span class="file-badge">DOCX</span>
+                            <span class="file-badge">Images</span>
+                        </div>
+                        <input type="file" id="pdf" accept=".pdf,.docx,.png,.jpg,.jpeg" hidden>
+                        <button class="browse-btn" onclick="document.getElementById('pdf').click()">
+                            <span>Select File</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="file-preview" id="filePreview" style="display: none;">
+                        <div class="file-info">
+                            <div class="file-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                            </div>
+                            <div class="file-details">
+                                <span class="file-name" id="fileName">document.pdf</span>
+                                <span class="file-size" id="fileSize">2.4 MB</span>
+                            </div>
+                            <button class="remove-file" onclick="removeFile()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="process-btn" onclick="upload()">
+                            <span class="btn-text">Process Document</span>
+                            <span class="btn-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="processing-state" id="processingState" style="display: none;">
+                        <div class="processing-visual">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring delay-1"></div>
+                            <div class="pulse-ring delay-2"></div>
+                            <div class="processing-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 class="processing-title">Processing Document</h3>
+                        <p class="processing-status" id="processingStatus">Analyzing content structure...</p>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressBar"></div>
+                            </div>
+                            <span class="progress-text" id="progressText">0%</span>
+                        </div>
+                        <div class="processing-steps">
+                            <div class="proc-step" id="step1">
+                                <span class="proc-check">✓</span>
+                                <span>Document uploaded</span>
+                            </div>
+                            <div class="proc-step" id="step2">
+                                <span class="proc-check">○</span>
+                                <span>Extracting text & tables</span>
+                            </div>
+                            <div class="proc-step" id="step3">
+                                <span class="proc-check">○</span>
+                                <span>Building knowledge base</span>
+                            </div>
+                            <div class="proc-step" id="step4">
+                                <span class="proc-check">○</span>
+                                <span>Ready for analysis</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 12h6M9 16h6M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
+                        </svg>
+                    </div>
+                    <h4>Smart Extraction</h4>
+                    <p>AI-powered text, table, and image extraction</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </div>
+                    <h4>Deep Analysis</h4>
+                    <p>Intelligent insights and pattern recognition</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h4>Secure Processing</h4>
+                    <p>End-to-end encrypted document handling</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bottom-bar">
+        <span>© 2025 Ministry of Interior • Document Intelligence Division</span>
+        <span class="footer-version">v2.1.0</span>
+    </footer>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('pdf');
+        const filePreview = document.getElementById('filePreview');
+        const processingState = document.getElementById('processingState');
+
+        // Drag and drop handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                fileInput.files = files;
+                showFilePreview(files[0]);
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                showFilePreview(e.target.files[0]);
+            }
+        });
+
+        function showFilePreview(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            dropZone.style.display = 'none';
+            filePreview.style.display = 'block';
+            filePreview.classList.add('fade-in');
+        }
+
+        function removeFile() {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            dropZone.style.display = 'flex';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        const statusMessages = [
+            'Analyzing content structure...',
+            'Extracting text elements...',
+            'Processing tables and figures...',
+            'Building semantic index...',
+            'Preparing AI assistant...'
+        ];
+
+        function upload() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Show processing state
+            filePreview.style.display = 'none';
+            processingState.style.display = 'block';
+            processingState.classList.add('fade-in');
+
+            // Update step indicator
+            document.querySelectorAll('.step')[0].classList.remove('active');
+            document.querySelectorAll('.step')[1].classList.add('active');
+
+            let data = new FormData();
+            data.append("pdf", file);
+
+            fetch("/upload", { method: "POST", body: data });
+
+            let statusIndex = 0;
+            let interval = setInterval(() => {
+                fetch("/progress")
+                    .then(r => r.json())
+                    .then(p => {
+                        const progress = p.progress;
+                        document.getElementById('progressBar').style.width = progress + '%';
+                        document.getElementById('progressText').textContent = Math.round(progress) + '%';
+
+                        // Update status message
+                        const newIndex = Math.min(Math.floor(progress / 25), statusMessages.length - 1);
+                        if (newIndex !== statusIndex) {
+                            statusIndex = newIndex;
+                            document.getElementById('processingStatus').textContent = statusMessages[statusIndex];
+                        }
+
+                        // Update processing steps
+                        if (progress >= 25) updateStep('step2', true);
+                        if (progress >= 50) updateStep('step3', true);
+                        if (progress >= 75) {
+                            updateStep('step4', true);
+                            document.querySelectorAll('.step')[1].classList.remove('active');
+                            document.querySelectorAll('.step')[2].classList.add('active');
+                        }
+
+                        if (p.done) {
+                            clearInterval(interval);
+                            setTimeout(() => {
+                                window.location.href = "/chat";
+                            }, 500);
+                        }
+                    });
+            }, 1000);
+        }
+
+        function updateStep(stepId, complete) {
+            const step = document.getElementById(stepId);
+            if (complete && !step.classList.contains('complete')) {
+                step.classList.add('complete');
+                step.querySelector('.proc-check').textContent = '✓';
+            }
+        }
+    </script>
+</body>
+</html>
