@@ -26,12 +26,12 @@ CRITICAL RULES (MANDATORY)
 ========================
 
 1. You MUST ALWAYS produce a NON-EMPTY explanatory response in the field "text_out".
-   - Even if the content consists ONLY of images or ONLY of tables.
+   - This applies even if the content consists ONLY of images or ONLY of tables.
    - "text_out" must NEVER be empty, null, or an empty string.
 
 2. "text_out" must be written in clear, natural language and MUST:
    - Explain what the document content represents.
-   - Explicitly describe images and tables.
+   - Explicitly refer to images and tables when they exist.
    - Use phrasing such as:
      • "The following image shows..."
      • "The image illustrates..."
@@ -39,17 +39,16 @@ CRITICAL RULES (MANDATORY)
      • "This document discusses..."
 
 3. Images handling:
-   - ALWAYS describe what each image depicts in "text_out".
-   - Include image_path in the "images" field.
-   - Do NOT copy image descriptions verbatim; summarize intelligently.
+   - If images are present, describe what each image depicts in "text_out".
+   - Include image_path ONLY inside the "images" field.
 
 4. Tables handling:
-   - Explain in "text_out" what each table is about.
+   - If tables are present, explain in "text_out" what each table is about.
    - Do NOT perform numerical summaries unless explicitly requested.
    - Return tables EXACTLY as provided in valid HTML.
 
 5. Output format:
-   - Return a valid JSON object with EXACTLY these keys:
+   - You MUST return a valid JSON object with EXACTLY these keys:
      {
        "text_out": string (NON-EMPTY),
        "images":   list of { "image_path", "image_description" },
@@ -67,8 +66,8 @@ CRITICAL RULES (MANDATORY)
 8. Insufficient content:
    - If content is minimal or irrelevant, still produce a helpful response.
 
-9. Coverage requirement:
-   - Combine ALL relevant text into one coherent explanation.
+10. Coverage requirement:
+    - Combine ALL relevant text into one coherent explanation.
 
 ========================
 END OF RULES
@@ -94,29 +93,20 @@ def serialize_chunk(chunk: dict) -> str:
 
     # -------- IMAGE --------
     if chunk_type == "image":
-        # Include above and below text if available
-        above = chunk.get("text_above", "").strip()
-        below = chunk.get("text_below", "").strip()
         return (
             f"[IMAGE]\n"
             f"Page: {chunk.get('page number')}\n"
             f"Path: {chunk.get('image_path')}\n"
-            f"Description:\n{chunk.get('description')}\n"
-            f"Text Above:\n{above}\n"
-            f"Text Below:\n{below}"
+            f"Description:\n{chunk.get('description')}"
         )
 
     # -------- TABLE --------
     if chunk_type == "table":
-        above = chunk.get("text_above", "").strip()
-        below = chunk.get("text_below", "").strip()
         return (
             f"[TABLE]\n"
             f"Page: {chunk.get('page number')}\n"
             f"Title: {chunk.get('description')}\n"
-            f"Table Content:\n{chunk.get('table content')}\n"
-            f"Text Above:\n{above}\n"
-            f"Text Below:\n{below}"
+            f"HTML:\n{chunk.get('table content')}"
         )
 
     return "[UNKNOWN CHUNK FORMAT]"
@@ -124,25 +114,36 @@ def serialize_chunk(chunk: dict) -> str:
 # =========================
 # MESSAGE STATE
 # =========================
-messages = [{"role": "system", "content": SYS_PROMPT}]
+messages = [
+    {"role": "system", "content": SYS_PROMPT}
+]
 
 # =========================
 # CHAT FUNCTION
 # =========================
 def chat(user_query: str):
+    """
+    user_query: the question or instruction for the assistant
+    returns: JSON object with keys: text_out, images, tables
+    """
+
+    # ---- detect if user wants images ----
+    wants_images = any(
+        kw in user_query.lower()
+        for kw in ["image", "images", "figure", "photo", "picture", "show"]
+    )
+
+    # ---- retrieve relevant document chunks ----
     retrieved_chunks = RAG_query(user_query)
 
-    # ---- FORCE IMAGE DESCRIPTIONS ALWAYS ----
+    # ---- FILTER IMAGES AT SOURCE ----
     filtered_chunks = []
     for chunk in retrieved_chunks:
-        if chunk.get("type") == "image":
-            filtered_chunks.append(chunk)  # always include
-        elif chunk.get("type") == "table":
-            filtered_chunks.append(chunk)
-        elif "text" in chunk:
-            filtered_chunks.append(chunk)
+        if chunk.get("type") == "image" and not wants_images:
+            continue
+        filtered_chunks.append(chunk)
 
-    # Serialize all chunks for the model
+    # ---- combine chunks for input to the model ----
     rag_block = "\n\n---\n\n".join(
         serialize_chunk(chunk) for chunk in filtered_chunks
     )
@@ -157,6 +158,7 @@ DOCUMENT CONTENT:
 
     messages.append({"role": "user", "content": user_message})
 
+    # ---- call OpenAI API ----
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
@@ -177,6 +179,7 @@ DOCUMENT CONTENT:
         raise RuntimeError(
             "❌ Model violated JSON contract.\n\nRaw output:\n" + assistant_reply
         )
+
 
 # =========================
 # TEST CALL (OPTIONAL)
